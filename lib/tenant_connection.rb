@@ -111,7 +111,7 @@ module TenantConnection
 
     result = conn.exec_params(
       "SELECT 1 FROM pg_database WHERE datname = $1",
-      [db_name_val]
+      [ db_name_val ]
     )
 
     if result.ntuples == 0

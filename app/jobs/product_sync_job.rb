@@ -27,7 +27,7 @@ class ProductSyncJob < ApplicationJob
       MasterProduct.upsert_all(
         rows,
         unique_by: :sku,
-        update_only: [:name, :price, :synced_at]
+        update_only: [ :name, :price, :synced_at ]
       )
 
       Rails.logger.info "[ProductSyncJob] Synced #{rows.size} products for #{company_slug}"

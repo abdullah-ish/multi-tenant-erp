@@ -5,9 +5,9 @@ puts "== Seeding Host DB =="
 acme   = Company.find_or_create_by!(slug: "acme")   { |c| c.name = "Acme Corp" }
 globex = Company.find_or_create_by!(slug: "globex") { |c| c.name = "Globex Inc" }
 
-puts "Created companies: #{[acme.slug, globex.slug].join(', ')}"
+puts "Created companies: #{[ acme.slug, globex.slug ].join(', ')}"
 
-[acme, globex].each do |company|
+[ acme, globex ].each do |company|
   puts "\n== Provisioning tenant: #{company.slug} =="
   TenantConnection.provision!(company.slug)
 

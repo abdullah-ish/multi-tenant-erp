@@ -40,7 +40,7 @@ module Api
     def order_params
       params.require(:order).permit(
         :shop_id,
-        items: [:shop_product_id, :quantity]
+        items: [ :shop_product_id, :quantity ]
       )
     end
   end

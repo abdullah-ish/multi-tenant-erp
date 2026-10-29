@@ -8,13 +8,13 @@ Rails.application.configure do
     product_sync_acme: {
       cron:   "*/15 * * * *",
       class:  "ProductSyncJob",
-      args:   ["acme"],
+      args:   [ "acme" ],
       description: "Sync Acme products every 15 minutes"
     },
     product_sync_globex: {
       cron:   "*/15 * * * *",
       class:  "ProductSyncJob",
-      args:   ["globex"],
+      args:   [ "globex" ],
       description: "Sync Globex products every 15 minutes"
     }
   }

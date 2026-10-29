@@ -9,6 +9,6 @@ class CreateShopProducts < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :shop_products, [:shop_id, :master_product_id]
+    add_index :shop_products, [ :shop_id, :master_product_id ]
   end
 end

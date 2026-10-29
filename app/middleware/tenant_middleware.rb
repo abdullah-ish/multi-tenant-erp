@@ -12,7 +12,7 @@ class TenantMiddleware
 
     token = extract_token(env)
     unless token
-      return [401, { "Content-Type" => "application/json" }, ['{"error":"Missing token"}']]
+      return [ 401, { "Content-Type" => "application/json" }, [ '{"error":"Missing token"}' ] ]
     end
 
     begin
@@ -24,7 +24,7 @@ class TenantMiddleware
       Current.company_slug = slug
       TenantConnection.switch(slug) { @app.call(env) }
     rescue JWT::DecodeError => e
-      [401, { "Content-Type" => "application/json" }, [{ error: e.message }.to_json]]
+      [ 401, { "Content-Type" => "application/json" }, [ { error: e.message }.to_json ] ]
     end
   end
 
