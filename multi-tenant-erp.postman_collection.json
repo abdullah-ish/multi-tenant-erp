@@ -1,0 +1,186 @@
+{
+  "info": {
+    "name": "Multi-Tenant ERP",
+    "description": "Rails 7.2 API — Acme & Globex tenants.\n\nFlow:\n1. Run **Login** for your tenant → token is auto-saved to the collection variable `token`.\n2. All other requests use that token automatically via Bearer auth.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000", "type": "string" },
+    { "key": "token",    "value": "",                      "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login — Acme",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    pm.test('Token received', () => pm.expect(json.token).to.be.a('string'));",
+                  "} else {",
+                  "    pm.test('Login failed', () => pm.expect(json.token).to.exist);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_slug\": \"acme\",\n  \"email\": \"admin@acme.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+            "description": "Returns a JWT valid for 24 hours. Token is auto-saved to `{{token}}`."
+          }
+        },
+        {
+          "name": "Login — Globex",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    pm.test('Token received', () => pm.expect(json.token).to.be.a('string'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_slug\": \"globex\",\n  \"email\": \"admin@globex.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+            "description": "Switch to Globex tenant. Token is auto-saved to `{{token}}`."
+          }
+        },
+        {
+          "name": "Login — Wrong Password (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_slug\": \"acme\",\n  \"email\": \"admin@acme.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+            "description": "Expects 401 Unauthorized."
+          }
+        },
+        {
+          "name": "Login — Unknown Company (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_slug\": \"unknown-corp\",\n  \"email\": \"admin@acme.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+            "description": "Expects 401 Unauthorized."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order — Acme (2 items)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order\": {\n    \"shop_id\": 1,\n    \"items\": [\n      { \"shop_product_id\": 1, \"quantity\": 2 },\n      { \"shop_product_id\": 3, \"quantity\": 1 }\n    ]\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/orders", "host": ["{{base_url}}"], "path": ["api", "orders"] },
+            "description": "Login as Acme first.\n\nItems ordered:\n- 2× Widget Alpha  (id=1, $9.99 each)\n- 1× Gadget Gamma  (id=3, $24.99)\n\nExpected total: $44.97\n\nThis also enqueues an OrderReportJob via GoodJob."
+          }
+        },
+        {
+          "name": "Create Order — Acme (single item)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order\": {\n    \"shop_id\": 1,\n    \"items\": [\n      { \"shop_product_id\": 5, \"quantity\": 1 }\n    ]\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/orders", "host": ["{{base_url}}"], "path": ["api", "orders"] },
+            "description": "Login as Acme first.\n\nItem ordered:\n- 1× Super Widget (id=5, $49.99)\n\nExpected total: $49.99"
+          }
+        },
+        {
+          "name": "Create Order — Globex (2 items)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order\": {\n    \"shop_id\": 1,\n    \"items\": [\n      { \"shop_product_id\": 2, \"quantity\": 3 },\n      { \"shop_product_id\": 5, \"quantity\": 1 }\n    ]\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/orders", "host": ["{{base_url}}"], "path": ["api", "orders"] },
+            "description": "Login as Globex first.\n\nItems ordered:\n- 3× Synergy Plus  (id=2, $29.99 each)\n- 1× Hyper Drive   (id=5, $99.99)\n\nExpected total: $189.96"
+          }
+        },
+        {
+          "name": "Create Order — No Token (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order\": {\n    \"shop_id\": 1,\n    \"items\": [\n      { \"shop_product_id\": 1, \"quantity\": 1 }\n    ]\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/api/orders", "host": ["{{base_url}}"], "path": ["api", "orders"] },
+            "description": "No Authorization header → TenantMiddleware returns 401 Missing token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/up", "host": ["{{base_url}}"], "path": ["up"] },
+            "description": "Rails health endpoint. Returns 200 OK with no body when the DB is reachable.\n\nNote: This goes through TenantMiddleware → returns 401 Missing token (by design, since /up is not in PUBLIC_PATHS). The app is still healthy."
+          }
+        }
+      ]
+    }
+  ]
+}

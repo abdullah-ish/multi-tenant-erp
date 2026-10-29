@@ -1,0 +1,23 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("DB_POOL") { 10 } %>
+  url: <%= ENV['DATABASE_URL'] %>
+  idle_timeout: <%= ENV.fetch("DB_IDLE_TIMEOUT") { 900 } %>
+
+test:
+  <<: *default
+  username: postgres
+  password: password
+  host: localhost
+  database: erp_host_test
+
+development:
+  <<: *default
+  username: postgres
+  password: password
+  host: localhost
+  database: erp_host_development
+
+production:
+  <<: *default
