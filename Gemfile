@@ -5,7 +5,7 @@ gem "pg", "~> 1.1"
 gem "puma", ">= 5.0"
 gem "bcrypt", "~> 3.1.7"
 gem "jwt"
-gem "good_job", "~> 3.0"
+gem "good_job", "~> 4.22"
 gem "faraday"
 gem "csv"
 
